@@ -24,11 +24,15 @@ from pdfminer3.pdfinterp import PDFResourceManager
 from pdfminer3.pdfinterp import PDFPageInterpreter
 from pdfminer3.converter import TextConverter
 from streamlit_tags import st_tags
+from dotenv import load_dotenv
 from PIL import Image
 # pre stored data for prediction purposes
 from Courses import ds_course,web_course,android_course,ios_course,uiux_course,resume_videos,interview_videos
 import nltk
 nltk.download('stopwords')
+
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI")
 
 
 ###### Preprocessing functions ######
@@ -92,7 +96,7 @@ def course_recommender(course_list):
 
 # MongoDB connection
 try:
-    client = pymongo.MongoClient("mongodb+srv://Linkdein:0KNy75C7ovMdb74T@cluster0.6jhyn.mongodb.net/Ai_resume")
+    client = pymongo.MongoClient(MONGO_URI)
     db = client.Ai_resume
     user_data_collection = db.user_data
     user_feedback_collection = db.user_feedback
@@ -106,7 +110,7 @@ except Exception as e:
 
 # inserting miscellaneous data, fetched results, prediction and recommendation into user_data collection
 def insert_data(sec_token,ip_add,host_name,dev_user,os_name_ver,latlong,city,state,country,act_name,act_mail,act_mob,name,email,res_score,timestamp,no_of_pages,reco_field,cand_level,skills,recommended_skills,courses,pdf_name):
-    if user_data_collection:
+    if user_data_collection is not None:
         try:
             user_data = {
                 'sec_token': str(sec_token),
@@ -143,7 +147,7 @@ def insert_data(sec_token,ip_add,host_name,dev_user,os_name_ver,latlong,city,sta
 
 # inserting feedback data into user_feedback collection
 def insertf_data(feed_name,feed_email,feed_score,comments,Timestamp):
-    if user_feedback_collection:
+    if user_feedback_collection is not None:
         try:
             feedback_data = {
                 'feed_name': feed_name,
@@ -647,7 +651,7 @@ def run():
 
 
         # Fetch data from MongoDB for feedback analytics
-        if user_feedback_collection:
+        if user_feedback_collection is not None:
             try:
                 # Get all feedback data from MongoDB
                 feedback_cursor = user_feedback_collection.find({})
@@ -733,7 +737,7 @@ def run():
             if ad_user == 'admin' and ad_password == 'admin@resume-analyzer':
                 
                 ### Fetch miscellaneous data from user_data collection and convert it into dataframe
-                if user_data_collection:
+                if user_data_collection is not None:
                     try:
                         # Get all user data from MongoDB
                         user_data_cursor = user_data_collection.find({})
@@ -850,7 +854,7 @@ def run():
                     st.warning("MongoDB connection not available. Cannot fetch user data.")
 
                 ### Fetch feedback data from user_feedback collection and convert it into dataframe
-                if user_feedback_collection:
+                if user_feedback_collection is not None:
                     try:
                         # Get all feedback data from MongoDB
                         feedback_cursor = user_feedback_collection.find({})
